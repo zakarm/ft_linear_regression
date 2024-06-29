@@ -17,7 +17,7 @@ def estimate_price(mileage: float) -> float:
     theta0, theta1 = read_theta()
     return (theta0 + theta1 * mileage)
 
-def main():
+def main() -> None:
     """
     Main function
     """
