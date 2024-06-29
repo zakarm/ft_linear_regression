@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 from utils import ANSIColor
 
+
 def read_theta() -> tuple:
     """
     Read the theta values from a file

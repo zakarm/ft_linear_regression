@@ -2,6 +2,19 @@ import os
 import sys
 import pandas as pd
 import numpy as np
+import argparse
+from tabulate import tabulate
+from utils import ANSIColor
+
+def argument_parser() -> argparse.Namespace:
+    """
+    Parse the command line arguments
+    """
+    parser = argparse.ArgumentParser(description="Train the linear regression model")
+    parser.add_argument("-l", "--learning_rate", type=float, default=0.01, help="Learning rate for the model")
+    parser.add_argument("-i", "--number_of_iterations", type=int, default=1000, help="Number of iterations for the model")
+    parser.add_argument("--info", action="store_true", help="Print information about the dataset and exit")
+    return parser.parse_args()
 
 class ft_linear_regression():
     """
@@ -64,12 +77,56 @@ class ft_linear_regression():
         df = pd.DataFrame({"theta0": [self.theta0], "theta1": [self.theta1]})
         df.to_csv("theta.csv", index=False)
 
+def check_dataset(mileages: np.array, prices: np.array, args: argparse.Namespace) -> None:
+    """
+    Check if the dataset is valid
+    """
+    if len(mileages) == 0 or len(prices) == 0:
+        print(ANSIColor.text("No data found", "red", None), file=sys.stderr)
+        sys.exit(1)
+
+    if args.learning_rate <= 0:
+        print(ANSIColor.text("Learning rate must be positive", "red", None), file=sys.stderr)
+        sys.exit(1)
+    elif args.number_of_iterations <= 0:
+        print(ANSIColor.text("Number of iterations must be positive", "red", None), file=sys.stderr)
+        sys.exit(1)
+
+def apply_args(args: argparse.Namespace, df) -> None:
+    """
+    Apply the command line arguments
+    """
+    if args.info:
+        print(ANSIColor.text("Dataset information : ", "yellow", None))
+        print(ANSIColor.text(f"\t - Shape : ", "green", None) + f"{df.shape}")
+        print(ANSIColor.text(f"\t - Description : ", "green", None))
+        description = df.describe()
+        table_str = tabulate(description, headers='keys', tablefmt='psql')
+        tabulated_str = '\n'.join('\t' + line for line in table_str.split('\n'))
+
+        print(tabulated_str)
+
+        print(ANSIColor.text(f"Learning rate : ", "yellow", None) + ANSIColor.text(f"{args.learning_rate}", "green", None))
+        print(ANSIColor.text(f"Number of iterations : ", "yellow", None) + ANSIColor.text(f"{args.number_of_iterations}", "green", None))
+        sys.exit(0)
+
 def main() -> None:
+    """
+    Main function
+    """
+    args = argument_parser()
+    if not os.path.exists("data.csv"):
+        print(ANSIColor.text("Data file not found", "red", None), file=sys.stderr)
+        sys.exit(1)
+    
     df = pd.read_csv("data.csv")
     mileages = df['km'].values
     prices = df['price'].values
-
-    model = ft_linear_regression()
+    
+    check_dataset(mileages, prices, args)
+    apply_args(args, df)
+    
+    model = ft_linear_regression(learning_rate=args.learning_rate, number_of_iterations=args.number_of_iterations)
 
     model.calculate_normalization_parameters(mileages, prices)
 
