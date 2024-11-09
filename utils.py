@@ -1,8 +1,7 @@
 
 class ANSIColor:
     RESET = "\033[0m"
-    
-    # Text colors
+
     COLORS = {
         'black': "\033[30m",
         'red': "\033[31m",
@@ -14,7 +13,6 @@ class ANSIColor:
         'white': "\033[37m",
     }
 
-    # Background colors
     BG_COLORS = {
         'black': "\033[40m",
         'red': "\033[41m",

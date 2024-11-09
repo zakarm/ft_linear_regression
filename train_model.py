@@ -5,6 +5,8 @@ import numpy as np
 import argparse
 from tabulate import tabulate
 from utils import ANSIColor
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error
 
 def argument_parser() -> argparse.Namespace:
     """
@@ -68,6 +70,10 @@ class ft_linear_regression():
             tmp_theta1 = self.learning_rate * 1/m * np.sum((predictions - prices) * mileages)
             self.theta0 -= tmp_theta0
             self.theta1 -= tmp_theta1
+        
+        self.theta1  = self.theta1 * (self.prices_std / self.mileages_std)
+        self.theta0 = self.prices_mean - self.theta1 * self.mileages_mean
+
         return self
 
     def save(self) ->  None:
@@ -76,6 +82,27 @@ class ft_linear_regression():
         """
         df = pd.DataFrame({"theta0": [self.theta0], "theta1": [self.theta1]})
         df.to_csv("theta.csv", index=False)
+
+    def plot_model(self, mileages: np.array, prices: np.array) -> None:
+        """
+        Plot the data points and the regression line
+        """
+        plt.scatter(mileages, prices, color="blue", label="Data Points")
+        plt.plot(mileages, self.predict(mileages), color="red", label="Regression Line")
+        plt.title("Linear Regression Model")
+        plt.xlabel("Mileage, km")
+        plt.ylabel("Price, $")
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+        
+    def calculate_precision(self, mileages: np.array, prices: np.array) -> float:
+        """
+        Calculate and return the Mean Squared Error as precision of the model
+        """
+        predictions = self.predict(mileages)
+        mse = mean_squared_error(prices, predictions)
+        return mse
 
 def check_dataset(mileages: np.array, prices: np.array, args: argparse.Namespace) -> None:
     """
@@ -135,10 +162,11 @@ def main() -> None:
 
     model.fit(mileages_normalized, prices_normalized)
 
-    model.theta0 = model.denormalize(model.theta0, model.prices_mean, model.prices_std)
-    model.theta1  = model.theta1 * (model.prices_std / model.mileages_std)
-
     model.save()
+    model.plot_model(mileages, prices)
+    
+    precision = model.calculate_precision(mileages, prices)
+    print(f"Model Precision (MSE): {precision}")
 
 if __name__ == "__main__":
     main()

@@ -8,7 +8,13 @@ def read_theta() -> tuple:
     """
     Read the theta values from a file
     """
+    if not os.path.exists("theta.csv") or os.path.getsize("theta.csv") == 0:
+        return (0, 0)
+    
     df = pd.read_csv("theta.csv")
+    if df.empty or "theta0" not in df.columns or "theta1" not in df.columns or len(df) == 0:
+        return (0, 0)
+    
     return (df["theta0"][0], df["theta1"][0])
 
 def estimate_price(mileage: float) -> float:
